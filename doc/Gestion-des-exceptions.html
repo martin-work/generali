@@ -173,11 +173,9 @@
 * afficher les erreurs connues en étant le moins verbeux possible <br>
 * et, au contraire, afficher une trace complête pour les autres erreurs</p>
 
-<p>Mais plutôt que de gérer cela à chaque possible exception on laisse le soin au frame le plus haut, la couche de présentation, de gérer les exceptions rencontrées.</p>
+<p>Mais plutôt que de gérer cela à chaque possible exception on laisse le soin au framework le plus haut, la couche de présentation, de gérer les exceptions rencontrées.</p>
 
 <p>Ce qui donne pour les appels à une couche de service :</p>
-
-
 
 <pre class="prettyprint"><code class="language-java hljs "><span class="hljs-keyword">try</span> {
     monServiceToto.calculMontant(...)
