@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Gestion-des-Exceptions.md</title>
+	<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+	<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+
+	<link rel="stylesheet" href="http://git.groupe.generali.fr/users/b010cdx/repos/web-static/browse/src/main/resources/fr/generali/user/msalazard/front/static/css/generali/generali.css?at=master&raw" />
+	<link rel="stylesheet" href="http://git.groupe.generali.fr/users/b010cdx/repos/web-static/browse/src/main/resources/fr/generali/user/msalazard/front/static/css/generali/pdofsi.css?at=master&raw" />
+	<link rel="stylesheet" href="http://git.groupe.generali.fr/users/b010cdx/repos/web-static/browse/src/main/resources/fr/generali/user/msalazard/front/static/css/generali/pdofsi-admin.css?at=master&raw" />
+	<link rel="stylesheet" href="http://git.groupe.generali.fr/users/b010cdx/repos/web-static/browse/src/main/resources/fr/generali/user/msalazard/front/static/css/admin-ui.css?at=master&raw" />
+
+</head>
+<body>
+	<table>
+		<tr>
+			<td>
+				<div class="container">
+					<table>
+						<tr>
+							<td>
+								<img src="http://git.groupe.generali.fr/users/b010cdx/repos/web-static/browse/src/main/resources/fr/generali/user/msalazard/front/static/image/generali/logo-50px.png?raw" />
+							</td>
+							<td>
+								<h1>Generali - Gestion-des-Exceptions.md</h1>
+							</td>
+							<td>
+								<img src="http://git.groupe.generali.fr/users/b010cdx/repos/web-static/browse/src/main/resources/fr/generali/user/msalazard/front/static/image/generali/logo-50px.png?raw" />
+							</td>
+						</tr>
+					</table>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="container"><h1 id="gestion-des-exceptions">Gestion des exceptions</h1>
+
+<blockquote>
+  <p><strong>Note:</strong> La dernière version est document est disponible <a href="http://googledrive.com/host/0B7vyUEUMu_BIR015SzhYOWdhNms/Gestion-des-Exceptions.html">ici dans sa <strong>version formatée</strong></a> et <a href="https://drive.google.com/open?id=0B7vyUEUMu_BIZmN5bjQ3M1kxZXM">là dans sa <strong>version brute</strong></a>.</p>
+</blockquote>
+
+<p><div class="toc">
+<ul>
+<li><a href="#gestion-des-exceptions">Gestion des exceptions</a><ul>
+<li><a href="#deux-écoles">Deux écoles…</a></li>
+<li><a href="#comment-faire">Comment faire ?</a><ul>
+<li><a href="#coté-java">Coté Java</a><ul>
+<li><a href="#gérer-les-exceptions-par-couches">Gérer les exceptions par couches</a></li>
+<li><a href="#trycatch-connu-1-connu-2-connu-3-inconnu">try/catch [ Connu 1, Connu 2, Connu 3, …, inconnu ]</a></li>
+</ul>
+</li>
+<li><a href="#du-coté-des-adhérences">Du coté des adhérences</a></li>
+<li><a href="#une-règle-toujours-valable">Une règle toujours valable</a></li>
+</ul>
+</li>
+<li><a href="#mise-en-pratique">Mise en pratique</a><ul>
+<li><a href="#exemple-erreur-fonctionnellement-blocante">Exemple Erreur fonctionnellement blocante</a></li>
+<li><a href="#exemple-erreur-non-fonctionnellement-blocante">Exemple Erreur non fonctionnellement blocante</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</p>
+
+
+
+<h2 id="deux-écoles">Deux écoles…</h2>
+
+<ul>
+<li>Exceptions forcée</li>
+<li>Exceptions non forcée ( Google )</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+  <th align="center">/</th>
+  <th align="left">Forcée</th>
+  <th align="left">Non forcée</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="center">étendent</td>
+  <td align="left"><code>Exception</code><a href="#fn:rt-exception" id="fnref:rt-exception" title="See footnote" class="footnote">1</a></td>
+  <td align="left"><code>RuntimeException</code></td>
+</tr>
+<tr>
+  <td align="center">avantage</td>
+  <td align="left">comportement plus évident<a href="#fn:jdoc_hater_or_missing" id="fnref:jdoc_hater_or_missing" title="See footnote" class="footnote">2</a></td>
+  <td align="left">code plus rapide à mettre en place</td>
+</tr>
+<tr>
+  <td align="center">désavantage</td>
+  <td align="left"></td>
+  <td align="left">Nécessite des aller-retour ( exception soulevée =&gt; correction )</td>
+</tr>
+<tr>
+  <td align="center">Context cible (à mon sens)</td>
+  <td align="left">plus adapté à des projets avec une bonne phase de pré-conception</td>
+  <td align="left">Plus pratique dans un context agile</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h2 id="comment-faire">Comment faire ?</h2>
+
+
+
+<h3 id="coté-java">Coté Java</h3>
+
+
+
+<h4 id="gérer-les-exceptions-par-couches">Gérer les exceptions par couches</h4>
+
+<p>Exemples de couches applicatives :</p>
+
+<table>
+<thead>
+<tr>
+  <th>Nom</th>
+  <th>Techno</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td>Editique</td>
+  <td>Soap</td>
+</tr>
+<tr>
+  <td>RCE</td>
+  <td>Soap</td>
+</tr>
+<tr>
+  <td>GDC</td>
+  <td>Rest <strong>(Client !)</strong></td>
+</tr>
+</tbody></table>
+
+
+<p>Couche techniques :</p>
+
+<table>
+<thead>
+<tr>
+  <th>Nom</th>
+  <th>Nom de classe</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td>Vue</td>
+  <td><code>*Controller</code></td>
+</tr>
+<tr>
+  <td>Service</td>
+  <td><code>*Service</code></td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="trycatch-connu-1-connu-2-connu-3-inconnu">try/catch [ Connu 1, Connu 2, Connu 3, …, inconnu ]</h4>
+
+<p>Dans la gestion d’exception essayer de <br>
+* afficher les erreurs connues en étant le moins verbeux possible <br>
+* et, au contraire, afficher une trace complête pour les autres erreurs</p>
+
+<p>Mais plutôt que de gérer cela à chaque possible exception on laisse le soin au frame le plus haut, la couche de présentation, de gérer les exceptions rencontrées.</p>
+
+<p>Ce qui donne pour les appels à une couche de service :</p>
+
+
+
+<pre class="prettyprint"><code class="language-java hljs "><span class="hljs-keyword">try</span> {
+    monServiceToto.calculMontant(...)
+} <span class="hljs-keyword">catch</span> (DonnéeIncorrecte diex) {
+    <span class="hljs-keyword">throw</span> ExpectedException(<span class="hljs-string">"Mauvais appel au Service Toto : "</span>+monService.inputFields(), diex)
+} <span class="hljs-keyword">catch</span> (TimeOut toex) {
+    <span class="hljs-keyword">throw</span> ExpectedException(<span class="hljs-string">"Le Service Toto a mis trop de temps à répondre"</span>, toex)
+} <span class="hljs-keyword">catch</span> (Exception ex) {
+    <span class="hljs-keyword">throw</span> RuntimeException(ex)
+}</code></pre>
+
+<p>Ensuite, le framework de présentation, affiche le message , si c’est une erreur connue ( i.e. une <code>ExpectedException</code> ), sinon on obtient une trace complête sur l’écran du problème ( et l’exception est loguée )</p>
+
+
+
+<h3 id="du-coté-des-adhérences">Du coté des adhérences</h3>
+
+<p>Quand il n’y a pas d’exception mais un un code d’erreur, il faut jetter une exception en prenant soin d’embarquer le code d’erreur. </p>
+
+
+
+<h3 id="une-règle-toujours-valable">Une règle toujours valable</h3>
+
+<p>Quand on rencontre une exception, soit on la logue soit on la jette à nouveau ( plus rarement les deux ! )</p>
+
+
+
+<h2 id="mise-en-pratique">Mise en pratique</h2>
+
+<p>Exemple fonctionnel, cas nominal</p>
+
+
+
+<div class="sequence-diagram"><svg height="746" version="1.1" width="1082" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="overflow: hidden; position: relative; left: -0.5px; top: -0.546875px;"><desc style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Created with Raphaël 2.1.2</desc><defs style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><marker id="raphael-marker-endblock55-obj82" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj85" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj88" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj91" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj94" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj100" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj103" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj106" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj109" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj112" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj115" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj118" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj124" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj127" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker></defs><rect x="10" y="20" width="85" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="20" y="30" width="65" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="52.5" y="38.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Utilisateur</tspan></text><rect x="10" y="689" width="85" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="20" y="699" width="65" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="52.5" y="707.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Utilisateur</tspan></text><path fill="none" stroke="#000000" d="M52.5,57L52.5,689" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="141.5" y="20" width="88" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="151.5" y="30" width="68" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="185.5" y="38.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Contrôleur</tspan></text><rect x="141.5" y="689" width="88" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="151.5" y="699" width="68" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="185.5" y="707.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Contrôleur</tspan></text><path fill="none" stroke="#000000" d="M185.5,57L185.5,689" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="338" y="20" width="151" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="348" y="30" width="131" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="413.5" y="38.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Service PDO Métier</tspan></text><rect x="338" y="689" width="151" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="348" y="699" width="131" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="413.5" y="707.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Service PDO Métier</tspan></text><path fill="none" stroke="#000000" d="M413.5,57L413.5,689" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="509" y="20" width="163" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="519" y="30" width="143" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="590.5" y="38.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Service PDO Editique</tspan></text><rect x="509" y="689" width="163" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="519" y="699" width="143" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="590.5" y="707.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Service PDO Editique</tspan></text><path fill="none" stroke="#000000" d="M590.5,57L590.5,689" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="692" y="20" width="50" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="702" y="30" width="30" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="717" y="38.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">FUE</tspan></text><rect x="692" y="689" width="50" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="702" y="699" width="30" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="717" y="707.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">FUE</tspan></text><path fill="none" stroke="#000000" d="M717,57L717,689" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="762" y="20" width="52" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="772" y="30" width="32" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="788" y="38.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">RCE</tspan></text><rect x="762" y="689" width="52" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="772" y="699" width="32" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="788" y="707.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">RCE</tspan></text><path fill="none" stroke="#000000" d="M788,57L788,689" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="834" y="20" width="72" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="844" y="30" width="52" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="870" y="38.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Editique</tspan></text><rect x="834" y="689" width="72" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="844" y="699" width="52" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="870" y="707.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Editique</tspan></text><path fill="none" stroke="#000000" d="M870,57L870,689" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="926" y="20" width="126" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="936" y="30" width="106" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="989" y="38.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Base de donnée</tspan></text><rect x="926" y="689" width="126" height="37" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="936" y="699" width="106" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="989" y="707.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Base de donnée</tspan></text><path fill="none" stroke="#000000" d="M989,57L989,689" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="62.5" y="73.5" width="113" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119" y="82" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Clique [Emission]</tspan></text><path fill="none" stroke="#000000" d="M52.5,94C52.5,94,156.32666665315628,94,180.50895180625957,94" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj82)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="230" y="110.5" width="139" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="299.5" y="119" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sauvegarde suspend</tspan></text><path fill="none" stroke="#000000" d="M185.5,131C185.5,131,375.0815908908844,131,408.49904905084986,131" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj85)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="495.75" y="147.5" width="139" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="565.25" y="156" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sauvegarde suspend</tspan></text><path fill="none" stroke="#000000" d="M413.5,168C413.5,168,672.5930828973651,168,712.0010395978188,168" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj88)" stroke-dasharray="6,2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="248.5" y="184.5" width="102" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="299.5" y="193" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Emets suspend</tspan></text><path fill="none" stroke="#000000" d="M185.5,205C185.5,205,375.0815908908844,205,408.49904905084986,205" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj91)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="514.25" y="221.5" width="102" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="565.25" y="230" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Emets suspend</tspan></text><path fill="none" stroke="#000000" d="M413.5,242C413.5,242,672.5930828973651,242,712.0010395978188,242" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj94)" stroke-dasharray="6,2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="675" y="262" width="84" height="27" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="680" y="267" width="74" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="717" y="275.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/!\ Boum [1]</tspan></text><rect x="510.25" y="305.5" width="110" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="565.25" y="314" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Donne n° contrat</tspan></text><path fill="none" stroke="#000000" d="M717,326C717,326,457.9069171026349,326,418.4989604021812,326" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj100)" stroke-dasharray="6,2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="248" y="342.5" width="103" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="299.5" y="351" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Renvoie contrat</tspan></text><path fill="none" stroke="#000000" d="M413.5,363C413.5,363,223.9184091091156,363,190.50095094915014,363" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj103)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="195.5" y="379.5" width="208" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="299.5" y="388" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Envoi mail confirmation au client</tspan></text><path fill="none" stroke="#000000" d="M185.5,400C185.5,400,375.0815908908844,400,408.49904905084986,400" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj106)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="535.25" y="416.5" width="131" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="600.75" y="425" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Demande mail client</tspan></text><path fill="none" stroke="#000000" d="M413.5,437C413.5,437,738.6340542808175,437,783.0065973333021,437" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj109)" stroke-dasharray="6,2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="545.25" y="453.5" width="111" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="600.75" y="462" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Donne mail client</tspan></text><path fill="none" stroke="#000000" d="M788,474C788,474,462.8659457191825,474,418.4934026666979,474" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj112)" stroke-dasharray="6,2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="284" y="490.5" width="208" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="388" y="499" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Envoi mail confirmation au client</tspan></text><path fill="none" stroke="#000000" d="M185.5,511C185.5,511,539.14337451756,511,585.5072641943007,511" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj115)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="677.75" y="527.5" width="105" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="730.25" y="536" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Envoi mail client</tspan></text><path fill="none" stroke="#000000" d="M590.5,548C590.5,548,827.405411452055,548,865.0002643436164,548" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj118)" stroke-dasharray="6,2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="828" y="568" width="84" height="27" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="833" y="573" width="74" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="870" y="581.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">/!\ Boum [2]</tspan></text><rect x="235.5" y="611.5" width="128" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="299.5" y="620" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sauvegarde contrat</tspan></text><path fill="none" stroke="#000000" d="M185.5,632C185.5,632,375.0815908908844,632,408.49904905084986,632" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj124)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="635.75" y="648.5" width="131" height="17" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="701.25" y="657" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: 'Andale Mono', monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sauvegarde Contrat</tspan></text><path fill="none" stroke="#000000" d="M413.5,669C413.5,669,927.6430377885699,669,984.0029557492799,669" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj127)" stroke-dasharray="6,2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path></svg></div>
+
+<blockquote>
+  <p><strong>Note:</strong> Tous les services à droite de <code>Service PDO Editique</code> sont à externe à la JVM. <br>
+  Les interactions en pointillé dénotent donc des appels qui sortent de la JVM. Il faut préter une attention particulière aux réponses de ces services.</p>
+</blockquote>
+
+<p>Voici la méthode sauvegarder suspens</p>
+
+
+
+<pre class="prettyprint"><code class="language-java hljs "><span class="hljs-keyword">try</span> {
+    pdoService.sauveSuspens(...)
+    pdoService.emetsSuspens(...)
+    numéroContrat = pdoService.emetsSuspens(...)
+    editiqueService.envoieMail(numéroContrat, ...)
+    pdoService.sauveContrat(...)
+} <span class="hljs-keyword">catch</span> (ExpectedException eex) {
+    JSF.addMessage(eex.getMessage())
+} <span class="hljs-keyword">catch</span> (Exception ex) {
+    message = ExceptionUtil.buildMessage(ex)
+    JSF.addMessage(<span class="hljs-string">"Un problème est survenu : "</span>+message)
+}</code></pre>
+
+
+
+<h3 id="exemple-erreur-fonctionnellement-blocante">Exemple Erreur fonctionnellement blocante</h3>
+
+<p>On suppose que l’émission du suspens va échouer (identifiable par la note <code>/!\ Boum [1]</code>).</p>
+
+<p>La séquence est intérompu et l’erreur est intercepré par le block <code>catch</code>.</p>
+
+<ul>
+<li>par <code>catch (ExpectedException eex)</code></li>
+<li>par <code>catch (Exception ex)</code> dans les autres cas</li>
+</ul>
+
+
+
+<h3 id="exemple-erreur-non-fonctionnellement-blocante">Exemple Erreur non fonctionnellement blocante</h3>
+
+<p>On suppose que l’Editique va échouer au moment de l’envoi du mail. <br>
+( Une exception innatendue va être renvoyée par le service, identifiable par la note <code>/!\ Boum [2]</code>. )</p>
+
+<p>Si ce n’était une erreur </p>
+
+<div class="footnotes"><hr><ol><li id="fn:rt-exception">Les exceptions forcées étendent aussi <em>Exception</em> mais les non forcées n’étendent <strong>pas</strong> <em>RuntimeException</em> <a href="#fnref:rt-exception" title="Return to article" class="reversefootnote">↩</a></li><li id="fn:jdoc_hater_or_missing">pour ceux qui détestent la javadoc ou quand celle-ci est manquante. <a href="#fnref:jdoc_hater_or_missing" title="Return to article" class="reversefootnote">↩</a></li></ol></div></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="container" style="font-size: 0.8em; text-align : center" >
+					<span>
+						Martin Salazard<br/>
+						<span class="background-generali-color">Generali France</span> Direction Etudes Souscription - Indemnisation
+					</span>
+				</div>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
