@@ -6,6 +6,7 @@
 	<title>Gestion-des-Exceptions.md</title>
 	<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
 	<link rel="stylesheet" href="/martin-work/web-util/master/static/css/stackedit/export.css" />
+	<script type="text/javascript" src="/martin-work/web-util/master/static/js/stackedit/export.js"></script>
 
 	<link rel="stylesheet" href="http://git.groupe.generali.fr/users/b010cdx/repos/web-static/browse/src/main/resources/fr/generali/user/msalazard/front/static/css/generali/generali.css?at=master&raw" />
 	<link rel="stylesheet" href="http://git.groupe.generali.fr/users/b010cdx/repos/web-static/browse/src/main/resources/fr/generali/user/msalazard/front/static/css/generali/pdofsi.css?at=master&raw" />
@@ -70,6 +71,8 @@
 </ul>
 </div>
 </p>
+
+
 
 <h2 id="deux-écoles">Deux écoles…</h2>
 
@@ -176,6 +179,8 @@
 <p>Mais plutôt que de gérer cela à chaque possible exception on laisse le soin au framework le plus haut, la couche de présentation, de gérer les exceptions rencontrées.</p>
 
 <p>Ce qui donne pour les appels à une couche de service :</p>
+
+
 
 <pre class="prettyprint"><code class="language-java hljs "><span class="hljs-keyword">try</span> {
     monServiceToto.calculMontant(...)
